@@ -1,0 +1,404 @@
+openapi: 3.0.3
+info:
+  title: ApronLink
+  version: 0.1.0
+  description: >-
+    Beacon-accurate airport traveler journeys with alerts, geo-offers, and parking commerce.
+  x-product-slug: ai-iot-apronlink
+  x-source: ai-in-iot/Accenture-riogaleao-airport-IOT-digital-transportation-experience/
+servers:
+  - url: https://api.example.com
+tags:
+  - name: Beacons
+  - name: Journeys
+  - name: Alerts
+  - name: Offers
+  - name: Parking
+paths:
+  /v1/beacons:
+    get:
+      operationId: listBeacons
+      tags: [Beacons]
+      security: [{ ApiKeyAuth: [] }, { BearerAuth: [] }]
+      parameters: [{ $ref: "#/components/parameters/Cursor" }, { $ref: "#/components/parameters/Limit" }]
+      responses:
+        "200":
+          description: Beacons
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListEnvelopeBeacon" }
+    post:
+      operationId: registerBeacon
+      tags: [Beacons]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BeaconCreate" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DataEnvelopeBeacon" }
+  /v1/journeys:
+    get:
+      operationId: listJourneys
+      tags: [Journeys]
+      security: [{ ApiKeyAuth: [] }, { BearerAuth: [] }]
+      parameters: [{ $ref: "#/components/parameters/Cursor" }, { $ref: "#/components/parameters/Limit" }]
+      responses:
+        "200":
+          description: Journeys
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListEnvelopeJourney" }
+    post:
+      operationId: startJourney
+      tags: [Journeys]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/JourneyCreate" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DataEnvelopeJourney" }
+  /v1/journeys/{journeyId}/zones:
+    parameters: [{ name: journeyId, in: path, required: true, schema: { type: string } }]
+    post:
+      operationId: recordZoneEnter
+      tags: [Journeys]
+      security: [{ ApiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ZoneEnter" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DataEnvelopeJourney" }
+  /v1/alerts:
+    get:
+      operationId: listAlerts
+      tags: [Alerts]
+      security: [{ ApiKeyAuth: [] }, { BearerAuth: [] }]
+      parameters: [{ $ref: "#/components/parameters/Cursor" }, { $ref: "#/components/parameters/Limit" }]
+      responses:
+        "200":
+          description: Alerts
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListEnvelopeTravelAlert" }
+    post:
+      operationId: publishAlert
+      tags: [Alerts]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TravelAlertCreate" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DataEnvelopeTravelAlert" }
+  /v1/offers:
+    get:
+      operationId: listOffers
+      tags: [Offers]
+      security: [{ ApiKeyAuth: [] }, { BearerAuth: [] }]
+      parameters: [{ $ref: "#/components/parameters/Cursor" }, { $ref: "#/components/parameters/Limit" }]
+      responses:
+        "200":
+          description: Offers
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListEnvelopeGeoOffer" }
+    post:
+      operationId: createOffer
+      tags: [Offers]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/GeoOfferCreate" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DataEnvelopeGeoOffer" }
+  /v1/parking-sessions:
+    get:
+      operationId: listParkingSessions
+      tags: [Parking]
+      security: [{ ApiKeyAuth: [] }, { BearerAuth: [] }]
+      parameters: [{ $ref: "#/components/parameters/Cursor" }, { $ref: "#/components/parameters/Limit" }]
+      responses:
+        "200":
+          description: Parking
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListEnvelopeParkingSession" }
+    post:
+      operationId: createParkingSession
+      tags: [Parking]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ParkingSessionCreate" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DataEnvelopeParkingSession" }
+  /v1/parking-sessions/{sessionId}/pay:
+    parameters: [{ name: sessionId, in: path, required: true, schema: { type: string } }]
+    post:
+      operationId: payParkingSession
+      tags: [Parking]
+      security: [{ BearerAuth: [] }, { ApiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ParkingPayment" }
+      responses:
+        "200":
+          description: Paid
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DataEnvelopeParkingSession" }
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Cursor:
+      name: cursor
+      in: query
+      schema: { type: string }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+  schemas:
+    ResponseMeta:
+      type: object
+      required: [requestId, timestamp]
+      properties:
+        requestId: { type: string }
+        timestamp: { type: string, format: date-time }
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+
+    Beacon:
+      type: object
+      required: [id, major, minor, zoneId]
+      properties:
+        id: { type: string }
+        major: { type: integer }
+        minor: { type: integer }
+        zoneId: { type: string }
+        label: { type: string }
+    BeaconCreate:
+      type: object
+      required: [major, minor, zoneId]
+      properties:
+        major: { type: integer }
+        minor: { type: integer }
+        zoneId: { type: string }
+        label: { type: string }
+    Journey:
+      type: object
+      required: [id, travelerId, status]
+      properties:
+        id: { type: string }
+        travelerId: { type: string }
+        flightId: { type: string }
+        currentZoneId: { type: string }
+        stage: { type: string, enum: [arrival, check_in, security, gate, boarding] }
+        status: { type: string, enum: [active, completed, cancelled] }
+        safetyMode: { type: boolean }
+    JourneyCreate:
+      type: object
+      required: [travelerId]
+      properties:
+        travelerId: { type: string }
+        flightId: { type: string }
+    ZoneEnter:
+      type: object
+      required: [zoneId, beaconId]
+      properties:
+        zoneId: { type: string }
+        beaconId: { type: string }
+        observedAt: { type: string, format: date-time }
+    TravelAlert:
+      type: object
+      required: [id, kind, message, status]
+      properties:
+        id: { type: string }
+        kind: { type: string, enum: [flight_status, disruption, security] }
+        message: { type: string }
+        flightId: { type: string }
+        status: { type: string, enum: [queued, sent, suppressed] }
+    TravelAlertCreate:
+      type: object
+      required: [kind, message]
+      properties:
+        kind: { type: string, enum: [flight_status, disruption, security] }
+        message: { type: string }
+        flightId: { type: string }
+        journeyId: { type: string }
+    GeoOffer:
+      type: object
+      required: [id, partnerId, title, status]
+      properties:
+        id: { type: string }
+        partnerId: { type: string }
+        title: { type: string }
+        zoneId: { type: string }
+        journeyStage: { type: string }
+        status: { type: string, enum: [draft, live, paused] }
+    GeoOfferCreate:
+      type: object
+      required: [partnerId, title]
+      properties:
+        partnerId: { type: string }
+        title: { type: string }
+        zoneId: { type: string }
+        journeyStage: { type: string }
+    ParkingSession:
+      type: object
+      required: [id, travelerId, status]
+      properties:
+        id: { type: string }
+        travelerId: { type: string }
+        lotId: { type: string }
+        status: { type: string, enum: [reserved, active, paid, cancelled] }
+        amountCents: { type: integer }
+    ParkingSessionCreate:
+      type: object
+      required: [travelerId, lotId]
+      properties:
+        travelerId: { type: string }
+        lotId: { type: string }
+    ParkingPayment:
+      type: object
+      required: [paymentToken]
+      properties:
+        paymentToken: { type: string }
+        amountCents: { type: integer }
+    DataEnvelopeBeacon:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/Beacon" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    ListEnvelopeBeacon:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items: { type: array, items: { $ref: "#/components/schemas/Beacon" } }
+            nextCursor: { type: string }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    DataEnvelopeJourney:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/Journey" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    ListEnvelopeJourney:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items: { type: array, items: { $ref: "#/components/schemas/Journey" } }
+            nextCursor: { type: string }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    DataEnvelopeTravelAlert:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/TravelAlert" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    ListEnvelopeTravelAlert:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items: { type: array, items: { $ref: "#/components/schemas/TravelAlert" } }
+            nextCursor: { type: string }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    DataEnvelopeGeoOffer:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/GeoOffer" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    ListEnvelopeGeoOffer:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items: { type: array, items: { $ref: "#/components/schemas/GeoOffer" } }
+            nextCursor: { type: string }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    DataEnvelopeParkingSession:
+      type: object
+      required: [data, meta]
+      properties:
+        data: { $ref: "#/components/schemas/ParkingSession" }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
+    ListEnvelopeParkingSession:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          required: [items]
+          properties:
+            items: { type: array, items: { $ref: "#/components/schemas/ParkingSession" } }
+            nextCursor: { type: string }
+        meta: { $ref: "#/components/schemas/ResponseMeta" }
